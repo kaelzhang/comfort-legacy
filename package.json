@@ -1,0 +1,18 @@
+{
+  "name": "arg-vector",
+  "version": "0.0.1",
+  "description": "A better parser and commander for commandline(CLI) argument vector",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/kaelzhang/arg-vector.git"
+  },
+  "author": "kael",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/kaelzhang/arg-vector/issues"
+  }
+}
