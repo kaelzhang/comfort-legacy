@@ -1,8 +1,8 @@
 {
-  "name": "arg-vector",
+  "name": "sub-commander",
   "version": "0.0.1",
-  "description": "A better parser and commander for commandline(CLI) argument vector",
-  "main": "index.js",
+  "description": "A much better node.js commander solution for sub commands.",
+  "main": "lib/sub-commander",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -14,5 +14,9 @@
   "license": "BSD",
   "bugs": {
     "url": "https://github.com/kaelzhang/arg-vector/issues"
+  },
+  "dependencies": {
+    "nopt": "~2.1.1",
+    "fs-sync": "~0.1.6"
   }
 }

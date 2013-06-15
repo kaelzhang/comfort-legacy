@@ -1,3 +1,3 @@
-# Arg-vector
+# Sub-commander
 
-A better parser and commander for commandline(CLI) argument vector(argv)
+A much better node.js commander solution for sub commands.
