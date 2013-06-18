@@ -3,6 +3,9 @@
   "version": "0.1.2",
   "description": "A much better node.js commander solution for sub commands.",
   "main": "lib/index",
+  "bin": {
+    "sub-commander": "bin/sub-commander.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
