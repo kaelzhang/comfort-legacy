@@ -1,22 +1,23 @@
 {
   "name": "sub-commander",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "description": "A much better node.js commander solution for sub commands.",
-  "main": "lib/sub-commander",
+  "main": "lib/index",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/kaelzhang/arg-vector.git"
+    "url": "git://github.com/kaelzhang/sub-commander.git"
   },
   "author": "kael",
   "license": "BSD",
   "bugs": {
-    "url": "https://github.com/kaelzhang/arg-vector/issues"
+    "url": "https://github.com/kaelzhang/sub-commander/issues"
   },
   "dependencies": {
     "nopt": "~2.1.1",
-    "fs-sync": "~0.1.6"
+    "fs-sync": "~0.1.6",
+    "typo": "~0.1.9"
   }
 }
