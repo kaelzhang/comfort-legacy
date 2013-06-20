@@ -16,9 +16,9 @@ For most situation, you could use `init` command of sub-commander, and skip all 
 	cd path/to/your/repo
 	# you should do this after `npm init`
 	sub-commander init
-	npm link # may be you should use "sudo"
+	npm link # maybe you should use "sudo"
 	
-And all things would be done after a few questions were asked.
+**All things would be done after a few questions were asked~~**.
 
 ****
 
@@ -56,7 +56,7 @@ The code above is all you need in your bin file( `bin/cli.js` ), if suppose the 
 BTW, all sections here will take `'cortex install'` for example.
 			
 
-## Option Parsing
+## Option parsing
 
 (what's comming...)
 
