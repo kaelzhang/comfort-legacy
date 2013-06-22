@@ -1,38 +1,38 @@
-# Sub-commander
+# Comfort
 
 > A much better node.js commander solution for sub commands.
 
-If you have sub commands, such as '\<my-module\> \<command\>', sub-commander will be extremely helpful.
+If you have sub commands, such as '\<my-module\> \<command\>', comfort will be extremely helpful.
  
-Sub-commander is designed to **make your code better organized and of scalability**, unlike [commander.js](https://github.com/visionmedia/commander.js).
+Comfort is designed to **make your code better organized and of scalability**, unlike [commander.js](https://github.com/visionmedia/commander.js).
 
 ## Installation
-	npm install sub-commander --save
+	npm install comfort --save
 
 ## Getting Started
 
-For most situation, you could use `init` command of sub-commander, and skip all my verbose explanations:
+For most situation, you could use `init` command of comfort, and skip all my verbose explanations:
 	
 	cd path/to/your/repo
 	# you should do this after `npm init`
-	sub-commander init
+	comfort init
 	npm link # maybe you should use "sudo"
 	
 **All things would be done after a few questions were asked~~**.
 
 ****
 
-And also, there's an avaliable sub-commander [grunt-init](https://github.com/gruntjs/grunt-init) template. :
+And also, there's an avaliable comfort [grunt-init](https://github.com/gruntjs/grunt-init) template. :
 	
 	mkdir -p ~/grunt-init/
-	git clone git@github.com:kaelzhang/grunt-init-sub-commander.git ~/grunt-init/sub-commander
+	git clone git@github.com:kaelzhang/grunt-init-comfort.git ~/grunt-init/comfort
 	cd path/to/your/repo
-	grunt-init sub-commander
+	grunt-init comfort
 	<your-command>
 	
-But, if you want to figure out how sub-commander works ——
+But, if you want to figure out how comfort works ——
 
-	var commander = require('sub-commander');
+	var commander = require('comfort');
 	var path = require('path');
 	
 	commander({
