@@ -7,39 +7,48 @@ If you have sub commands, such as '\<my-module\> \<command\>', comfort will be e
 Comfort is designed to **make your code better organized and of scalability**, unlike [commander.js](https://github.com/visionmedia/commander.js).
 
 ## Installation
-	npm install comfort --save
+
+```bash
+npm install comfort --save
+```
 
 ## Getting Started
 
 For most situation, you could use `init` command of comfort, and skip all my verbose explanations:
-	
-	cd path/to/your/repo
-	# you should do this after `npm init`
-	comfort init
-	npm link # maybe you should use "sudo"
+
+```bash	
+cd path/to/your/repo
+# you should do this after `npm init`
+comfort init
+npm link # maybe you should use "sudo"
+```
 	
 **All things would be done after a few questions were asked~~**.
 
 ****
 
 And also, there's an avaliable comfort [grunt-init](https://github.com/gruntjs/grunt-init) template. :
-	
-	mkdir -p ~/grunt-init/
-	git clone git@github.com:kaelzhang/grunt-init-comfort.git ~/grunt-init/comfort
-	cd path/to/your/repo
-	grunt-init comfort
-	<your-command>
+
+```bash
+mkdir -p ~/grunt-init/
+git clone git@github.com:kaelzhang/grunt-init-comfort.git ~/grunt-init/comfort
+cd path/to/your/repo
+grunt-init comfort
+<your-command>
+```
 	
 But, if you want to figure out how comfort works ——
 
-	var commander = require('comfort');
-	var path = require('path');
-	
-	commander({
-		commands: path.join(__dirname, '..', 'lib', 'command'),
-		options: path.join(__dirname, '..', 'lib', 'option'),
-		name: 'cortex'
-	}).cli();
+```js
+var commander = require('comfort');
+var path = require('path');
+
+commander({
+	commands: path.join(__dirname, '..', 'lib', 'command'),
+	options: path.join(__dirname, '..', 'lib', 'option'),
+	name: 'cortex'
+}).cli();
+```
 
 The code above is all you need in your bin file( `bin/cli.js` ), if suppose the directory structure of your project is:
 
