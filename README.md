@@ -95,29 +95,15 @@ Parse an argument vector to an object according to the rules, the parsed object 
 ##### rules
 `Object` rules. See "option parsing" section.
 
-## parser.parse_rules(rules)
 
-Parse an list of rules into several sections which will be used by `nopt`.
+## parser.clean(data, rules[, type_defs])
 
-##### Returns
+Clean the specified data. Notice that the original data will be changed.
 
-`Object` object contains:
+It will be extremely usefull to prevent XSS attack.
 
-- types: `Object` type definition of options
-- short: `Object` shorthands
-- defaults: `Object` default values, or generators of default values
-- options: `Array` array of option keys
-
-## parser.parse_argv()
-
-Parse an argument vector into an object.
-
-##### Returns
-`Object` 
-
-## parser.clean(data, types, type_defs)
-
-Clean the specified data. Notice that the original data will be changed
+##### data
+`Object`
 
 ##### Returns
 `data`
