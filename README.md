@@ -96,7 +96,7 @@ Parse an argument vector to an object according to the rules, the parsed object 
 `Object` rules. See "option parsing" section.
 
 
-## parser.clean(data, rules[, type_defs])
+### parser.clean(data, rules[, type_defs])
 
 Clean the specified data. Notice that the original data will be changed.
 
