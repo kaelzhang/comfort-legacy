@@ -10,32 +10,25 @@ Comfort is designed to **make your code better organized and of scalability**, u
 
 ```bash
 npm install comfort --save
+npm install comfort -g
 ```
 
 ## Getting Started
 
-For most situation, you could use `init` command of comfort, and skip all my verbose explanations:
+For most situations, you could use `init` command of comfort, and skip all my verbose explanations:
 
-```bash	
+```bash
+npm install comfort -g
 cd path/to/your/repo
 # you should do this after `npm init`
-comfort init
+comfort init [--force]
 npm link # maybe you should use "sudo"
+<your-bin>
 ```
 	
 **All things would be done after a few questions were asked~~**.
 
 ****
-
-And also, there's an avaliable comfort [grunt-init](https://github.com/gruntjs/grunt-init) template. :
-
-```bash
-mkdir -p ~/grunt-init/
-git clone git@github.com:kaelzhang/grunt-init-comfort.git ~/grunt-init/comfort
-cd path/to/your/repo
-grunt-init comfort
-<your-command>
-```
 	
 But, if you want to figure out how comfort works ——
 
