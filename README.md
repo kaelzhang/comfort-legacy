@@ -18,59 +18,38 @@ npm install comfort -g
 For most situations, you could use `init` command of comfort, and skip all my verbose explanations:
 
 ```bash
-npm install comfort -g
+npm install comfort -g # install comfort cli
 cd path/to/your/repo
-# you should do this after `npm init`
+npm init # run `npm init` first
 comfort init [--force]
 npm link # maybe you should use "sudo"
+# Done! and you could see your command immediatly
 <your-bin>
+```
+
+By default, there will be a built-in `'help'` command to display help informations and a `'sample'` command for instance. 
+
+You could run
+
+```bash
+<your-bin> sample # to see the result
+<your-bin> help sample # to the help info for `sample`
 ```
 	
 **All things would be done after a few questions were asked~~**.
 
 ****
 	
-But, if you want to figure out how comfort works ——
+If you want to figure out how comfort works, well, 
+	
+> Shut up, just show me the code!
 
-```js
-var commander = require('comfort');
-var path = require('path');
+just see the annotations in the files under `root` directory.
 
-commander({
-	commands: path.join(__dirname, '..', 'lib', 'command'),
-	options: path.join(__dirname, '..', 'lib', 'option'),
-	name: 'cortex'
-}).cli();
-```
-
-The code above is all you need in your bin file( `bin/cli.js` ), if suppose the directory structure of your project is:
-
-	bin/
-		cli.js
-		
-	lib/
-		command/
-			install.js
-			
-		option/
-			install.js
-			
-BTW, all sections here will take `'cortex install'` for example.
-			
-
-## Option parsing
-
-(what's comming...)
-
-See sample project under `'test/'` for now.
+Or, you could just execute `comfort init` command, and see what happened to your new project.
 
 
-## Commander
-			
-(what's comming...)
-
-See sample project under `'test/'` for now.
-
+****
 
 # Methods
 
