@@ -44,9 +44,9 @@ If you want to figure out how comfort works, well,
 	
 > Shut up, just show me the code!
 
-just see the annotations in the files under `root` directory.
+and just see the annotations in the files under `root` directory.
 
-Or, you could just execute `comfort init` command, and see what happened to your new project.
+Or, you could execute `comfort init` command, and see what happened to your new project.
 
 
 ****
