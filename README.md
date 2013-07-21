@@ -21,7 +21,7 @@ For most situations, you could use `init` command of comfort, and skip all my ve
 npm install comfort -g # install comfort cli
 cd path/to/your/repo
 npm init # run `npm init` first
-comfort init [--force]
+comfort init
 npm link # maybe you should use "sudo"
 # Done! and you could see your command immediatly
 <your-bin>
