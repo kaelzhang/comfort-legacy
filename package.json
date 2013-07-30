@@ -6,6 +6,17 @@
   "bin": {
     "comfort": "bin/comfort.js"
   },
+  "keywords": [
+    "commander",
+    "sub-commander",
+    "sub-command",
+    "command",
+    "comfort",
+    "argv",
+    "argument",
+    "command-line",
+    "cli"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
