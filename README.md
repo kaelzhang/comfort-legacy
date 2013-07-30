@@ -2,7 +2,7 @@
 
 > A much better node.js commander solution for sub commands.
 
-If you have sub commands, such as '\<my-module\> \<command\>', comfort will be extremely helpful.
+If you have sub commands, such as `<my-module> <command>`, comfort will be extremely helpful.
  
 Comfort is designed to **make your code better organized and of scalability**, unlike [commander.js](https://github.com/visionmedia/commander.js).
 
