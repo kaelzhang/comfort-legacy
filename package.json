@@ -1,8 +1,8 @@
 {
   "name": "comfort",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "Comfort is a much better node.js commander solution for sub commands.",
-  "main": "lib/index",
+  "main": "index.js",
   "bin": {
     "comfort": "bin/comfort.js"
   },
@@ -30,10 +30,10 @@
     "url": "https://github.com/kaelzhang/sub-commander/issues"
   },
   "dependencies": {
-    "nopt": "~2.1.1",
     "fs-sync": "~0.1.6",
     "typo": "~0.1.9",
     "async": "~0.2.9",
-    "read": "~1.0.5"
+    "read": "~1.0.5",
+    "argv-parser": "~0.1.3"
   }
 }
