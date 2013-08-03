@@ -1,7 +1,7 @@
 {
   "name": "comfort",
   "version": "0.1.12",
-  "description": "A much better node.js commander solution for sub commands.",
+  "description": "Comfort is a much better node.js commander solution for sub commands.",
   "main": "lib/index",
   "bin": {
     "comfort": "bin/comfort.js"
