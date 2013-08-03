@@ -31,9 +31,9 @@
   },
   "dependencies": {
     "fs-sync": "~0.1.6",
-    "typo": "~0.1.9",
     "async": "~0.2.9",
     "read": "~1.0.5",
-    "argv-parser": "~0.1.3"
+    "argv-parser": "~0.1.3",
+    "loggie": "~0.1.9"
   }
 }
