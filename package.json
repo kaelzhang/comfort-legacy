@@ -30,7 +30,7 @@
     "url": "https://github.com/kaelzhang/sub-commander/issues"
   },
   "dependencies": {
-    "fs-sync": "~0.1.6",
+    "fs-sync": "~0.2.1",
     "async": "~0.2.9",
     "read": "~1.0.5",
     "argv-parser": "~0.1.3",
