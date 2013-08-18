@@ -1,6 +1,6 @@
 {
   "name": "comfort",
-  "version": "0.2.18",
+  "version": "0.2.19",
   "description": "Comfort is a much better node.js commander solution for sub commands.",
   "main": "index.js",
   "bin": {
