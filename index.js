@@ -6,11 +6,16 @@
 //      options: './opt/',
 //      name: 'cortex'
 //  }).cli();
-module.exports = Comfort;
+module.exports = comfort;
+comfort.Comfort = Comfort;
+
+function comfort (options) {
+    return new Comfort(options);
+}
 
 
 var DEFAULT_EVENTS = {
-    commandNotFound = function(e) {
+    commandNotFound: function(e) {
         this.logger.error(
             this.logger.template('{{name}}: "{{command}}" is not a {{name}} command. See "{{name}} --help".', {
                 name: e.name,
@@ -19,7 +24,7 @@ var DEFAULT_EVENTS = {
         );
     },
 
-    complete = function(e) {
+    complete: function(e) {
         if(e.err){
             this.logger.error(e.err);
         }else if(e.command !== 'help'){
@@ -28,16 +33,17 @@ var DEFAULT_EVENTS = {
     }
 };
 
-var node_path = require('path');
-var EE = require('events').EventEmitter;
-var node_util = require('util');
 
-var node_fs = require('fs');
-var clean = require('clean');
+var node_path   = require('path');
+var EE          = require('events').EventEmitter;
+var node_util   = require('util');
+var node_spawn  = require('child_process').spawn;
+var node_fs     = require('fs');
 
+var clean       = require('clean');
 
-var builtin_command_root = node_path.join( __dirname, 'built-in', 'command' );
-var builtin_option_root = node_path.join( __dirname, 'built-in', 'option' );
+var builtin_command_root = node_path.join( __dirname, 'lib', 'built-in', 'command' );
+var builtin_option_root = node_path.join( __dirname, 'lib', 'built-in', 'option' );
 
 
 var exists = node_fs.existsSync ?
@@ -54,6 +60,10 @@ var exists = node_fs.existsSync ?
             return false;
         }
     };
+
+function isFile (file) {
+    return node_fs.statSync(file).isFile();
+}
 
 
 function Comfort(options){
@@ -84,26 +94,76 @@ node_util.inherits(Comfort, EE);
 
 // Should:
 // - driven by callbacks
-// - handle errors with node.js favored async way
+// - handle errors with node-favored async way
 
 // run cli
 Comfort.prototype.cli = function(argv) {
     var self = this;
 
-    this.parse(argv || process.argv, function(err, result, details){
+    argv = argv || process.argv;
+
+    this.parse(argv, function(err, result, details){
         var command = result.command;
         var opt = result.opt;
 
         self.run(command, opt, function (err) {
-            
-        })
+            if ( err ) {
+                if ( err.code === 'E_COMMAND_NOT_FOUND' ) {
+
+                    self._run_plugin(command, argv.slice(self.options.offset));
+                } else {
+                    self._cli_complete(); // undone
+                }
+            } else {
+                self._cli_complete(); // undone
+            }
+        });
     });
 };
 
 
-Comfort.prototype._argv_error = function (data) {
-    var errors = data.options.errors;
+// Try to run the given command from the `PATH`
+Comfort.prototype._run_plugin = function(command, args, callback) {
+    var name = this.options.name;
+    var bin = name + '-' + command;
+    var paths = process.env.PATH.split(':');
+    var found;
 
+    paths.some(function (path) {
+        var bin_path = node_path.resolve(path, bin);
+
+        if ( exists(bin_path) && isFile(bin_path) ) {
+            found = bin_path;
+
+            return true;
+        }
+    });
+
+    if ( !found ) {
+        return callback({
+            code: 'E_PLUGIN_NOT_FOUND',
+            message: '"' + command + '" is not a ' + name + ' plugin', 
+            data: {
+                name: name,
+                command: command
+            }
+        });
+    }
+
+    var plugin = node_spawn(found, args, {
+        stdio: 'inherit'
+        // `options.customFds` is now DEPRECATED.
+        // just for backward compatibility.
+        customFds: [0, 1, 2]
+    });
+
+    plugin.on('close', function(code){
+        callback(code);
+    });
+};
+
+
+Comfort.prototype._cli_complete = function () {
     this._emit('complete', {
         name: this.options.name,
         command: data.command,
@@ -115,12 +175,6 @@ Comfort.prototype._argv_error = function (data) {
 
         data: null
     });
-};
-
-
-// Run a specific command by comfort it self
-Comfort.prototype._run_cli = function(command, options) {
-    this.run(command, options, this._callback_handler(command));
 };
 
 
@@ -141,7 +195,6 @@ Comfort.prototype.run = function (command, options, callback) {
         //     command: command,
         //     name: name
         // });
-
         callback({
             code: 'E_COMMAND_NOT_FOUND',
             message: '"' + command + '" is not a built-in ' + name + ' command', 
@@ -159,7 +212,7 @@ Comfort.prototype.run = function (command, options, callback) {
 
 // Run a given commander
 Comfort.prototype._run_commander = function (commander, options, callback) {
-    commander.run(options.callback);
+    commander.run(options, callback);
 };
 
 
