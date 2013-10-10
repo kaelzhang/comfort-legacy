@@ -15,8 +15,8 @@ function comfort (options) {
 
 
 var DEFAULT_EVENTS = {
-    commandNotFound: function(e) {
-        this.logger.error(
+    plugin: function(e) {
+        this.logger.info(
             this.logger.template('{{name}}: "{{command}}" is not a {{name}} command. See "{{name}} --help".', {
                 name: e.name,
                 command: e.command
@@ -25,8 +25,21 @@ var DEFAULT_EVENTS = {
     },
 
     complete: function(e) {
-        if(e.err){
-            this.logger.error(e.err);
+        var err = e.err;
+
+        if(err){
+            if ( err instanceof Error ) {
+                // loggie will deal with `Error` instances
+                this.logger.error(err)
+
+            // error code
+            } else if (typeof err === 'number') {
+                this.logger.error('Not ok, exit code: ' + err);
+            
+            } else {
+                this.logger.error( err.message || err );
+            }
+
         }else if(e.command !== 'help'){
             this.logger.info('{{green OK!}}');
         }
@@ -96,6 +109,24 @@ node_util.inherits(Comfort, EE);
 // - driven by callbacks
 // - handle errors with node-favored async way
 
+// ****
+
+// # Events:
+// ## plugin
+// {
+//     name: {string},
+//     command: {string} plugin name,
+//     args: {Array}  
+// }
+
+// ## complete
+// {
+//     name   : {string}
+//     command: {string} command name
+//     err    : {mixed}
+//     data   : []
+// }
+
 // run cli
 Comfort.prototype.cli = function(argv) {
     var self = this;
@@ -107,17 +138,27 @@ Comfort.prototype.cli = function(argv) {
         var opt = result.opt;
 
         self.run(command, opt, function (err) {
-            if ( err ) {
-                if ( err.code === 'E_COMMAND_NOT_FOUND' ) {
-
-                    self._run_plugin(command, argv.slice(self.options.offset));
-                } else {
-                    self._cli_complete(); // undone
-                }
-            } else {
-                self._cli_complete(); // undone
+            if ( err && err.code === 'E_COMMAND_NOT_FOUND') {
+                return self._run_plugin(command, argv.slice(self.options.offset), function(){
+                    self._cli_complete(command, arguments)
+                });
             }
+
+            self._cli_complete(command, arguments);
         });
+    });
+};
+
+
+Comfort.prototype._cli_complete = function (command, args) {
+    args = Array.prototype.slice.call(args);
+    var error = args.shift();
+
+    this._emit('complete', {
+        name   : this.options.name,
+        command: command,
+        err    : error,
+        data   : args
     });
 };
 
@@ -134,24 +175,22 @@ Comfort.prototype._run_plugin = function(command, args, callback) {
 
         if ( exists(bin_path) && isFile(bin_path) ) {
             found = bin_path;
-
             return true;
         }
     });
 
     if ( !found ) {
-        return callback({
-            code: 'E_PLUGIN_NOT_FOUND',
-            message: '"' + command + '" is not a ' + name + ' plugin', 
-            data: {
-                name: name,
-                command: command
-            }
-        });
+        return this._command_not_found(command, callback);
     }
 
+    this._emit('plugin', {
+        name: name,
+        command: command,
+        args: args
+    });
+
     var plugin = node_spawn(found, args, {
-        stdio: 'inherit'
+        stdio: 'inherit',
         // `options.customFds` is now DEPRECATED.
         // just for backward compatibility.
         customFds: [0, 1, 2]
@@ -163,17 +202,15 @@ Comfort.prototype._run_plugin = function(command, args, callback) {
 };
 
 
-Comfort.prototype._cli_complete = function () {
-    this._emit('complete', {
-        name: this.options.name,
-        command: data.command,
-        err: Object.keys(errors).map(function (option) {
-            var err_text = errors[option];
-
-            return 'Error parsing option "--' + option + '": ' + err_text.join('. ');
-        }).join('\n'),
-
-        data: null
+Comfort.prototype._command_not_found = function(command, callback) {
+    var name = this.options.name;
+    callback({
+        code: 'E_COMMAND_NOT_FOUND',
+        message: '"' + command + '" is not a ' + name + ' command', 
+        data: {
+            name: name,
+            command: command
+        }
     });
 };
 
@@ -191,18 +228,7 @@ Comfort.prototype.run = function (command, options, callback) {
     }
 
     if ( !commander ) {
-        // this._emit('commandNotFound', {
-        //     command: command,
-        //     name: name
-        // });
-        callback({
-            code: 'E_COMMAND_NOT_FOUND',
-            message: '"' + command + '" is not a built-in ' + name + ' command', 
-            data: {
-                name: this.options.name,
-                command: command
-            }
-        });
+        this._command_not_found(command, callback);
 
     } else {
         this._run_commander(commander, options, callback);
