@@ -1,19 +1,44 @@
-# Comfort
+[![Build Status](https://travis-ci.org/kaelzhang/node-comfort.png?branch=master)](https://travis-ci.org/kaelzhang/node-comfort)
 
-> A much better node.js commander solution for sub commands.
+# comfort
+
+Comfort is a much better node.js commander solution for sub commands.
 
 If you have sub commands, such as `<my-module> <command>`, comfort will be extremely helpful.
  
 Comfort is designed to **make your code better organized and of scalability**, unlike [commander.js](https://github.com/visionmedia/commander.js).
 
-## Installation
+## Features
+
+#### Plugin support
+
+A command-line application (`cortex` for example) and its sub-commands built with `comfort` are structured much like git(1).
+
+To develop a new sub-command(`'blah'` for example) as a plugin(so you don't want to change the origin repository of `cortex`), just create a new node.js module, add a value to `bin` field of the package.json as:
+
+```
+{
+	"bin": {
+		"cortex-blah": "bin/xxxxx.js"
+	}
+}
+```
+Comfort will look for `PATH` in your env, and search for a plugin command.
+
+#### Falling love with creating sub-commands
+
+To add a new built-in command(`'haha'` for example), just add a file "haha.js" to the `options.command_root` directory, DONE!
+
+#### Powerful argument parser
+
+
+# Installation
 
 ```bash
 npm install comfort --save
-npm install comfort -g
 ```
 
-## Getting Started
+# Getting Started
 
 For most situations, you could use `init` command of comfort, and skip all my verbose explanations:
 
