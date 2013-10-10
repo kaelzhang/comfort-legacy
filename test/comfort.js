@@ -47,3 +47,11 @@ describe("cli methods", function(){
         });
     });
 });
+
+
+describe("legacy node 0.6 & 0.8", function(){
+    it("no error", function(done){
+        cli('node xxx blah -f --nw --retry 12');
+        done();
+    });
+});
