@@ -137,6 +137,10 @@ Comfort.prototype.cli = function(argv) {
         var command = result.command;
         var opt = result.opt;
 
+        if ( err ) {
+            return self._cli_complete(command, [err]);
+        }
+
         self.run(command, opt, function (err) {
             if ( err && err.code === 'E_COMMAND_NOT_FOUND') {
                 return self._run_plugin(command, argv.slice(self.options.offset), function(){
