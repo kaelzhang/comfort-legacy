@@ -30,7 +30,6 @@
     "url": "https://github.com/kaelzhang/node-comfort/issues"
   },
   "dependencies": {
-    "fs-sync": "~0.2.1",
     "async": "~0.2.9",
     "clean": "~2.1.1",
     "loggie": "~0.1.9"
