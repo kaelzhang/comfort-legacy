@@ -3,6 +3,8 @@
 var comfort = require('../');
 var expect = require('chai').expect;
 
+var node_path = require('path');
+
 var create = require('./fixtures/create');
 
 function parse (argv, callback) {
@@ -43,8 +45,33 @@ describe("cli methods", function(){
 
             expect(e.err).not.to.equal(null);
             expect(e.command).to.equal('blah');
-            expect(e.name).to.equal('abc');
+            expect(e.name).to.equal('comforttest');
         });
+    });
+
+    it("support plugin", function(done){
+        var test_path = node_path.resolve('test', 'fixtures', 'plugin');
+
+        test_path += ':';
+
+        var origin_PATH = process.env.PATH;
+
+        if ( ! ~ origin_PATH.indexOf(test_path) ) {
+            process.env.PATH = test_path + process.env.PATH;
+        }
+
+        var c = create().on('complete', function(e){
+            done();
+            process.env.PATH = origin_PATH;
+
+            // exit code is not ok
+            expect(e.err).to.equal(2);
+
+        }).on('plugin', function(e){
+            expect(e.command).to.equal('abc');
+        });
+
+        c.cli('node xxx abc -f --nw --retry 12'.split(' '));
     });
 });
 
