@@ -22,7 +22,7 @@ var DEFAULT_EVENTS = {
     },
 
     complete: function(e) {
-        var err = e.err;
+        var err = e.error;
 
         if(err){
             if ( err instanceof Error ) {
@@ -135,23 +135,23 @@ Comfort.prototype.cli = function(argv) {
         var opt = result.opt;
 
         if ( err ) {
-            return self._cli_complete(command, [err]);
+            return self._emit_complete(command, [err]);
         }
 
         self.run(command, opt, function (err) {
             if ( err && err.code === 'E_COMMAND_NOT_FOUND') {
                 return self._run_plugin(command, argv.slice(self.options.offset), function(){
-                    self._cli_complete(command, arguments)
+                    self._emit_complete(command, arguments)
                 });
             }
 
-            self._cli_complete(command, arguments);
+            self._emit_complete(command, arguments);
         });
     });
 };
 
 
-Comfort.prototype._cli_complete = function (command, args) {
+Comfort.prototype._emit_complete = function (command, args) {
     args = Array.prototype.slice.call(args);
     var error = args.shift();
 
@@ -345,23 +345,6 @@ Comfort.prototype.get_commander = function (command) {
     }
 
     return commander;
-};
-
-
-Comfort.prototype._callback_handler = function(command) {
-    var self = this;
-
-    return function() {
-        var args = Array.prototype.slice.call(arguments);
-        var error = args.shift();
-
-        self._emit('complete', {
-            name   : self.options.name,
-            command: command,
-            err    : error && (error.stack || error.message || error.error || error),
-            data   : args
-        });
-    }
 };
 
 
