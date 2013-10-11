@@ -60,6 +60,8 @@ describe("cli methods", function(){
             process.env.PATH = test_path + process.env.PATH;
         }
 
+        console.log(process.env.PATH)
+
         if ( ~ process.env.PATH.indexOf(test_path) ) {
             var c = create().on('complete', function(e){
                 done();

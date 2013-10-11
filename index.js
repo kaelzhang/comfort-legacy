@@ -197,7 +197,8 @@ Comfort.prototype._run_plugin = function(command, args, callback) {
         customFds: [0, 1, 2]
     });
 
-    plugin.on('close', function(code){
+    // for node <= 0.6, 'close' event often could not be triggered
+    plugin.on('exit', function(code){
         callback(code);
     });
 };
