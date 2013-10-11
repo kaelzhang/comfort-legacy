@@ -208,7 +208,7 @@ Comfort.prototype._command_not_found = function(command, callback) {
     var name = this.options.name;
     callback({
         code: 'E_COMMAND_NOT_FOUND',
-        message: '"' + command + '" is not a ' + name + ' command', 
+        message: name + ': "' + command + '" is not a "' + name + '" command. See "' + name + ' --help".',
         data: {
             name: name,
             command: command
