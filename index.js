@@ -158,7 +158,7 @@ Comfort.prototype._cli_complete = function (command, args) {
     this._emit('complete', {
         name   : this.options.name,
         command: command,
-        err    : error,
+        error  : error,
         data   : args
     });
 };

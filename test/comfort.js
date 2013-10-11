@@ -43,7 +43,7 @@ describe("cli methods", function(){
         cli('node xxx blah -f --nw --retry 12').on('complete', function(e){
             done();
 
-            expect(e.err).not.to.equal(null);
+            expect(e.error).not.to.equal(null);
             expect(e.command).to.equal('blah');
             expect(e.name).to.equal('comforttest');
         });
@@ -62,10 +62,13 @@ describe("cli methods", function(){
 
         var c = create().on('complete', function(e){
             done();
-            process.env.PATH = origin_PATH;
+            process.env.PATH = origin_PATH; 
+
+            require('util').inspect(e.error)
+            console.log(String(e.error), typeof e.error);
 
             // exit code is not ok
-            expect(e.err).to.equal(2);
+            expect(e.error).to.equal(2);
 
         }).on('plugin', function(e){
             expect(e.command).to.equal('abc');
