@@ -62,10 +62,9 @@ describe("cli methods", function(){
 
         var c = create().on('complete', function(e){
             done();
-            process.env.PATH = origin_PATH; 
+            process.env.PATH = origin_PATH;
 
-            require('util').inspect(e.error)
-            console.log(String(e.error), typeof e.error);
+            console.log(String(e.error), typeof e.error, e.error.code, e.error.message, e.error.data);
 
             // exit code is not ok
             expect(e.error).to.equal(2);
