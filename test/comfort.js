@@ -60,20 +60,24 @@ describe("cli methods", function(){
             process.env.PATH = test_path + process.env.PATH;
         }
 
-        var c = create().on('complete', function(e){
+        if ( ~ process.env.PATH.indexOf(test_path) ) {
+            var c = create().on('complete', function(e){
+                done();
+                process.env.PATH = origin_PATH;
+
+                // exit code is not ok
+                expect(e.error).to.equal(2);
+
+            }).on('plugin', function(e){
+                expect(e.command).to.equal('abc');
+            });
+
+            c.cli('node xxx abc -f --nw --retry 12'.split(' '));
+        
+        } else {
+            console.log('process.env.PATH could not be modified, skip checking');
             done();
-            process.env.PATH = origin_PATH;
-
-            console.log(String(e.error), typeof e.error, e.error.code, e.error.message, e.error.data);
-
-            // exit code is not ok
-            expect(e.error).to.equal(2);
-
-        }).on('plugin', function(e){
-            expect(e.command).to.equal('abc');
-        });
-
-        c.cli('node xxx abc -f --nw --retry 12'.split(' '));
+        }
     });
 });
 
