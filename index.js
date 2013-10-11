@@ -17,10 +17,7 @@ function comfort (options) {
 var DEFAULT_EVENTS = {
     plugin: function(e) {
         this.logger.info(
-            this.logger.template('{{name}}: "{{command}}" is not a {{name}} command. See "{{name}} --help".', {
-                name: e.name,
-                command: e.command
-            })
+            this.logger.template('{{name}}: run plugin "{{command}}" with argument {{args}}.', e)
         );
     },
 
@@ -30,7 +27,7 @@ var DEFAULT_EVENTS = {
         if(err){
             if ( err instanceof Error ) {
                 // loggie will deal with `Error` instances
-                this.logger.error(err)
+                this.logger.error(err);
 
             // error code
             } else if (typeof err === 'number') {
