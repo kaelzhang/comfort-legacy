@@ -245,7 +245,7 @@ Comfort.prototype._run_commander = function (commander, options, callback) {
 
 
 // parse a specified argument vector
-// @param {function()} callback 
+// @param {function(err, result, details)} callback 
 Comfort.prototype.parse = function(argv, callback) {
 
     // argv ->
