@@ -335,11 +335,11 @@ Comfort.prototype.get_commander = function (command) {
             return false;
         }
 
-        commander = require(commander_file);
+        var commander_proto = require(commander_file);
 
         // There might be more than one comfort instances,
         // so `Object.create` a new commander object to prevent reference pollution.
-        this.__commander[command] = Object.create(commander);
+        commander = this.__commander[command] = Object.create(commander_proto);
 
         commander.context = this.context;
         commander.logger  = this.logger;

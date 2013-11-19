@@ -1,8 +1,4 @@
-[![NPM version](https://badge.fury.io/js/comfort.png)](http://badge.fury.io/js/comfort)
-[![Build Status](https://travis-ci.org/kaelzhang/node-comfort.png?branch=master)](https://travis-ci.org/kaelzhang/node-comfort)
-[![Dependency Status](https://gemnasium.com/kaelzhang/node-comfort.png)](https://gemnasium.com/kaelzhang/node-comfort)
-
-# comfort
+# comfort [![NPM version](https://badge.fury.io/js/comfort.png)](http://badge.fury.io/js/comfort) [![Build Status](https://travis-ci.org/kaelzhang/node-comfort.png?branch=master)](https://travis-ci.org/kaelzhang/node-comfort) [![Dependency Status](https://gemnasium.com/kaelzhang/node-comfort.png)](https://gemnasium.com/kaelzhang/node-comfort)
 
 Comfort is a much better node.js commander solution for sub commands.
 

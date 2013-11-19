@@ -82,9 +82,26 @@ describe("cli methods", function(){
 });
 
 
+describe("prevent pollution for a certain command", function(){
+    it("independent instances", function(done){
+        var one = create().on('complete', function(e){
+            var two = create().on('complete', function(e){
+                done();
+            });
+
+            two.cli('node xxx polute -f --nw --retry 12'.split(' '));
+        });
+
+        one.cli('node xxx polute -f --nw --retry 12'.split(' '));
+    });
+});
+
+
 describe("legacy node 0.6 & 0.8", function(){
     it("no error", function(done){
         cli('node xxx blah -f --nw --retry 12');
         done();
     });
 });
+
+
