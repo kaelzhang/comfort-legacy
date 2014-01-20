@@ -82,7 +82,6 @@ function Comfort(options){
     this.context = options.context || {};
 
     options.offset = 'offset' in options ? options.offset : 3;
-    // options.default_command = options.default_command || 'help';
 
     this.__commander = {};
 }
@@ -281,6 +280,17 @@ Comfort.prototype.parse = function(argv, callback) {
                 entrance: argv.length === 2
             }
         });
+
+    } else if (
+        argv.indexOf('-v') > 0 ||
+        argv.indexOf('--version') > 0
+    ) {
+        callback(null, {
+            command: 'version',
+            opt: {
+                cwd: this.options.root
+            }
+        });
     
     // normal command
     } else {
@@ -376,7 +386,7 @@ Comfort.prototype._emit = function(type, data) {
 Comfort.prototype._get_commander_file = function(command) {
     return !!command && (
         this._get_file(this.options.command_root, command) || 
-        command === 'help' && this._get_file(builtin_command_root, command)
+        this._get_file(builtin_command_root, command)
     );
 };
 
@@ -384,7 +394,7 @@ Comfort.prototype._get_commander_file = function(command) {
 Comfort.prototype._get_option_file = function(command) {
     return !!command && (
         this._get_file(this.options.option_root, command) || 
-        command === 'help' && this._get_file(builtin_option_root, command)
+        this._get_file(builtin_option_root, command)
     );
 };
 
