@@ -1,6 +1,6 @@
 {
   "name": "comfort",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "description": "Comfort is a much better node.js commander solution for sub commands.",
   "main": "index.js",
   "keywords": [
@@ -29,7 +29,8 @@
   "dependencies": {
     "async": "~0.2.9",
     "clean": "~2.1.1",
-    "loggie": "~0.1.9"
+    "loggie": "~0.1.9",
+    "fs-sync": "^0.2.4"
   },
   "devDependencies": {
     "mocha": "~1.13.0",
