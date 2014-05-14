@@ -27,7 +27,7 @@
     "url": "https://github.com/kaelzhang/node-comfort/issues"
   },
   "dependencies": {
-    "async": "^0.7.0",
+    "async": "^0.8.0",
     "clean": "~2.1.1",
     "fs-expand": "^0.1.2",
     "fs-extra": "^0.8.1"
