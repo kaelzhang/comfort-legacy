@@ -7,7 +7,6 @@
 //      name: 'cortex'
 //  }).cli();
 module.exports = comfort;
-comfort.Comfort = Comfort;
 
 function comfort(options) {
   options || (options = {});
@@ -275,7 +274,7 @@ Comfort.prototype.run = function(argv, callback) {
       return callback(err);
     }
 
-    
+
   });
 };
 
