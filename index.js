@@ -456,7 +456,10 @@ Comfort.prototype.commander = function(command, callback) {
 
     // There might be more than one comfort instances,
     // so `Object.create` a new commander object to prevent reference pollution.
+    // Equivalent to prototype inheritance
     var commander = self.__commander[command] = Object.create(proto);
+
+    // Equivalent to `constructor.call(this)`
     mix(commander, self.context);
 
     callback(null, commander);
