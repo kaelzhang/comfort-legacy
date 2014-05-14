@@ -131,9 +131,12 @@ Comfort.prototype._parse = function(argv, callback, strict) {
     return callback(null, {
       argv: argv,
       command: command,
-      type: this._is_normal(command)
-        ? 'normal'
-        : 'builtin';
+      options: {
+        root: this.options.root
+      },
+      type: this._is_builtin(command)
+        ? 'builtin'
+        : 'normal'
     });
   }
 
@@ -163,12 +166,14 @@ Comfort.prototype._parse = function(argv, callback, strict) {
     return callback(null, {
       argv: argv,
       command: command,
-      type: 
+      type: this._is_builtin(command)
+        ? 'builtin'
+        : 'normal',
       options: {
         command: command_for_help,
 
         // if there's only root command, an `entrance` option will be added
-        entry: is_entry_command
+        entry: is_entry
       }
     });
   }
@@ -409,14 +414,14 @@ Comfort.prototype.commander = function(command, callback) {
     : this.options.command_root;
 
   var self = this;
-  this._get_command(command, root, function (err, proto) {
+  this._get_command(command, command_root, function (err, proto) {
     if (err) {
       return callback(err);
     }
 
     // There might be more than one comfort instances,
     // so `Object.create` a new commander object to prevent reference pollution.
-    var commander = this.__commander[command] = Object.create(commander_proto);
+    var commander = self.__commander[command] = Object.create(proto);
     mix(commander, self.context);
 
     callback(null, commander);
