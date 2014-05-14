@@ -378,9 +378,10 @@ Comfort.prototype.plugin = function(command, args, callback) {
     return node_path.resolve(path, bin);
   });
 
+  var self = this;
   this._try_files(paths, function (found) {
     if (!found) {
-      return this._command_not_found(command, callback);
+      return self._command_not_found(command, callback);
     }
 
     var plugin = spawn(found, args, {
@@ -500,10 +501,9 @@ Comfort.prototype.commander = function(command, callback) {
 
 // run cli
 Comfort.prototype.cli = function(argv) {
-  var self = this;
-
   argv = argv || process.argv;
 
+  var self = this;
   this.run(argv, function (err) {
     if (err) {
       self.emit('error', err);
