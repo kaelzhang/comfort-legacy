@@ -10,83 +10,275 @@ module.exports = comfort;
 comfort.Comfort = Comfort;
 
 function comfort(options) {
+  options || (options = {});
   return new Comfort(options);
 }
 
 
-var DEFAULT_EVENTS = {
-  plugin: function(e) {
-    this.logger.info(
-      this.logger.template('{{name}}: run plugin "{{command}}" with argument {{args}}.', e)
-    );
-  },
-
-  complete: function(e) {
-    var err = e.error;
-
-    if (err) {
-      if (err instanceof Error) {
-        // loggie will deal with `Error` instances
-        this.logger.error(err);
-
-        // error code
-      } else if (typeof err === 'number') {
-        this.logger.error('Not ok, exit code: ' + err);
-
-      } else {
-        this.logger.error(err.message || err);
-      }
-
-    } else if (e.command !== 'help') {
-      this.logger.info('{{green OK!}}');
-    }
-  }
-};
-
-
 var node_path = require('path');
 var EE = require('events').EventEmitter;
-var node_util = require('util');
-var node_spawn = require('child_process').spawn;
-var node_fs = require('fs');
+var util = require('util');
+var spawn = require('child_process').spawn;
+var fs = require('fs');
+var expand = require('fs-expand');
 
 var clean = require('clean');
 
-var builtin_command_root = node_path.join(__dirname, 'lib', 'built-in', 'command');
-var builtin_option_root = node_path.join(__dirname, 'lib', 'built-in', 'option');
-
-
-var exists = node_fs.existsSync ?
-    function(file) {
-      return node_fs.existsSync(file);
-  } :
-
-  // if node <= 0.6, there's no fs.existsSync method.
-  function(file) {
-    try {
-      node_fs.statSync(file);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  };
-
-function isFile(file) {
-  return node_fs.statSync(file).isFile();
-}
+var BUILTIN_COMMAND_ROOT = node_path.join(__dirname, 'lib', 'built-in', 'command');
+var BUILTIN_OPTION_ROOT = node_path.join(__dirname, 'lib', 'built-in', 'option');
 
 
 function Comfort(options) {
-  this.options = options = options || {};
-  this.logger = options.logger || require('loggie')();
+  this.options = options;
   this.context = options.context || {};
-
+  this.commands = options.commands;
   options.offset = 'offset' in options ? options.offset : 3;
 
   this.__commander = {};
 }
 
-node_util.inherits(Comfort, EE);
+util.inherits(Comfort, EE);
+
+
+// 'abc.js' -> 'abc'
+// 'abc.js.js' -> 'abc'
+var REGEX_REPLACE_EXTENSION = /\..+$/;
+
+// Get all commands
+Comfort.prototype._get_commands = function(callback) {
+  if (this.commands) {
+    return callback(null, this.commands);
+  }
+
+  var self = this;
+  expand('*.js', {
+      cwd: this.options.command_root
+  }, function (err, files) {
+    if (err) {
+      return callback(err);
+    }
+
+    var commands = files.map(function(command) {
+      return command.replace(REGEX_REPLACE_EXTENSION, '');
+    });
+    // Cache it
+    self.commands = commands;
+    callback(null, commands);
+  });
+};
+
+
+Comfort.prototype.parse = function(argv, callback) {
+  var self = this;
+  this._get_commands(function (err) {
+    if (err) {
+      return callback(err);
+    }
+
+    self._parse(argv, callback);
+  });
+};
+
+
+var BUILTIN_COMMANDS = [
+  'help',
+  'version'
+];
+
+// parse a specified argument vector
+// @param {Array} argv process.argv or something like that
+// @param {function(err, result, details)} callback 
+// @param {boolean} strict if strict, 
+Comfort.prototype._parse = function(argv, callback, strict) {
+  // argv ->
+  // ['node', __dirname, '<command>', ...]
+  var command = argv[2];
+  var is_entry = !command;
+
+  var is_command =
+    command
+    && command.indexOf('-') !== 0;
+
+  var is_normal = is_command && this._is_normal(command);
+  var is_builtin = is_command && this._is_builtin(command);
+
+  // Plugins
+  ////////////////////////////////////////////////////////////////////////////////////
+  // cortex <plugin> --version
+  // cortex <plugin> -v
+  // Plugin command needs special treatment.
+  if (is_command && !is_normal && !is_builtin) {
+    if (strict) {
+      var name = this.options.name;
+      return callback({
+        code: 'COMMAND_NOT_FOUND',
+        message: name + ': "' + command + '" is not a "' + name + '" command. See "' + name + ' --help".',
+        data: {
+          name: name,
+          command: command
+        }
+      });
+    }
+
+    return callback(null, {
+      argv: argv,
+      command: command,
+
+      // 'normal', 'builtin', 'plugin'
+      type: 'plugin'
+    });
+  }
+
+  // Version
+  ////////////////////////////////////////////////////////////////////////////////////
+  if (
+    command === 'version' || 
+    ~argv.indexOf('-v') ||
+    ~argv.indexOf('--version')
+  ) {
+    command = 'version';
+    return callback(null, {
+      argv: argv,
+      command: command,
+      type: this._is_normal(command)
+        ? 'normal'
+        : 'builtin';
+    });
+  }
+
+  // Help -h, --help
+  ////////////////////////////////////////////////////////////////////////////////////
+  var index_h = argv.indexOf('-h');
+  var index_help = argv.indexOf('--help');  
+
+  // 'help' command need special treatment
+  if (
+    // cortex -h
+    ~index_h ||
+    // cortex --help
+    ~index_help ||
+    // root command will be help command
+    is_entry ||
+    // cortex --wrong-argument
+    !is_command
+  ) {
+    // 1      2       3
+    // cortex install -h
+    // cortex install --help 
+    // -> cortex help
+    var command_for_help = index_h !== 2 && index_help !== 2 && argv[2];
+    command = 'help';
+
+    return callback(null, {
+      argv: argv,
+      command: command,
+      type: 
+      options: {
+        command: command_for_help,
+
+        // if there's only root command, an `entrance` option will be added
+        entry: is_entry_command
+      }
+    });
+  }
+
+  // Normal & Builtin
+  ////////////////////////////////////////////////////////////////////////////////////
+  this._parse_argv(command, argv, callback);
+};
+
+
+Comfort.prototype._is_builtin = function(command) {
+  return ~BUILTIN_COMMANDS.indexOf(command);
+};
+
+
+Comfort.prototype._is_normal = function(command) {
+  return ~this.commands.indexOf(command);
+};
+
+
+// Parse the argv of a normal or builtin command
+Comfort.prototype._parse_argv = function(command, argv, callback) {
+  var is_normal = this._is_normal(command);
+  var option_root = is_normal
+    ? this.option_root
+    : BUILTIN_OPTION_ROOT;
+
+  var type = is_normal 
+    ? 'normal' 
+    : 'builtin';
+
+  this._get_option_rule(command, option_root, function (err, rule) {
+    if (err) {
+      return callback(err);
+    }
+
+    if (!rule) {
+      return callback(null, {
+        argv: argv,
+        command: command,
+        type: type,
+        options: {}
+      });
+    }
+
+    // parse argv
+    clean({
+      schema: rule.options,
+      shorthands: rule.shorthands,
+      offset: this.options.offset,
+      context: this.context
+
+    }).parseArgv(argv, function(err, results, details) {
+      callback(err, {
+        command: command,
+        options: results,
+        argv: argv,
+        type: type
+      });
+    });
+  });
+};
+
+
+Comfort.prototype._get_option_rule = function(command, root, callback) {
+  var file = node_path.join(root, command + '.js');
+  fs.exists(file, function (exists) {
+    if (!exists) {
+      return callback(null, null);
+    }
+
+    var rule;
+    try {
+      rule = require(file);
+    } catch(e) {
+      return callback({
+        code: 'FAIL_READ_OPTION',
+        message: 'Fails to read option file "' + file + '": ' + e.stack,
+        data: {
+          command: command,
+          file: file,
+          error: e
+        }
+      });
+    }
+
+    callback(null, rule);
+  });
+};
+
+
+Comfort.prototype.run = function(argv, callback) {
+  this.parse(argv, function (err) {
+    if (err) {
+      return callback(err);
+    }
+
+    
+  });
+};
+
 
 // # Design spec
 
@@ -189,7 +381,7 @@ Comfort.prototype._run_plugin = function(command, args, callback) {
     args: args
   });
 
-  var plugin = node_spawn(found, args, {
+  var plugin = spawn(found, args, {
     stdio: 'inherit',
     // `options.customFds` is now DEPRECATED.
     // just for backward compatibility.
@@ -243,88 +435,7 @@ Comfort.prototype._run_commander = function(commander, options, callback) {
 };
 
 
-// parse a specified argument vector
-// @param {function(err, result, details)} callback 
-Comfort.prototype.parse = function(argv, callback) {
 
-  // argv ->
-  // ['node', __dirname, '<command>', ...]
-  var command;
-  var index_h = argv.indexOf('-h');
-  var index_help = argv.indexOf('--help');
-
-  // 'help' command need special treatment
-  if (
-    // ctx -h
-    index_h > 0 ||
-    // ctx --help
-    index_help > 0 ||
-    // ctx
-    // root command will be help command
-    argv.length === 2
-  ) {
-    // 1   2       3
-    // ctx install -h
-    // ctx install --help 
-    // -> ctx help --command install --no-detail
-    var command_for_help = index_h !== 2 && index_help !== 2 && argv[2];
-
-    callback(null, {
-      command: 'help',
-      opt: {
-        // ctx
-        // -> ctx help --command * --no-detail
-        command: command_for_help || '*',
-
-        // if there's only root command, an `entrance` option will be added
-        entrance: argv.length === 2
-      }
-    });
-
-  } else if (
-    argv.indexOf('-v') > 0 ||
-    argv.indexOf('--version') > 0
-  ) {
-    callback(null, {
-      command: 'version',
-      opt: {
-        cwd: this.options.root
-      }
-    });
-
-    // normal command
-  } else {
-    command = argv[2];
-    var parsed;
-
-    var opt_file = this._get_option_file(command);
-    var opt_rules;
-
-    if (opt_file) {
-      var rule = require(opt_file);
-
-      clean({
-        schema: rule.options,
-        shorthands: rule.shorthands,
-        offset: this.options.offset,
-        context: this.context
-
-      }).parseArgv(argv, function(err, results, details) {
-        callback(err, {
-          command: command,
-          opt: results
-        }, details);
-      });
-
-      // if no opt_rule matches 
-    } else {
-      callback(null, {
-        command: command,
-        opt: {}
-      });
-    }
-  }
-};
 
 
 // check if a sub commander 
@@ -391,16 +502,31 @@ Comfort.prototype._get_commander_file = function(command) {
 };
 
 
-Comfort.prototype._get_option_file = function(command) {
-  return !!command && (
-    this._get_file(this.options.option_root, command) ||
-    this._get_file(builtin_option_root, command)
-  );
-};
-
-
 Comfort.prototype._get_file = function(root, name) {
   var file = node_path.join(root, name + '.js');
 
   return exists(file) && file;
 };
+
+// var DEFAULT_EVENTS = {
+//   complete: function(e) {
+//     var err = e.error;
+
+//     if (err) {
+//       if (err instanceof Error) {
+//         // loggie will deal with `Error` instances
+//         this.logger.error(err);
+
+//         // error code
+//       } else if (typeof err === 'number') {
+//         this.logger.error('Not ok, exit code: ' + err);
+
+//       } else {
+//         this.logger.error(err.message || err);
+//       }
+
+//     } else if (e.command !== 'help') {
+//       this.logger.info('{{green OK!}}');
+//     }
+//   }
+// };
