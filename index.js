@@ -163,6 +163,10 @@ Comfort.prototype._parse = function(argv, callback, strict) {
     var command_for_help = index_h !== 2 && index_help !== 2 && argv[2];
     command = 'help';
 
+    if (is_entry) {
+      this.emit('entry');
+    }
+
     return callback(null, {
       argv: argv,
       command: command,
