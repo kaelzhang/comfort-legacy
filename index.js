@@ -246,7 +246,7 @@ Comfort.prototype._parse_argv = function(command, argv, callback) {
   var is_builtin = this._is_builtin(command);
   var option_root = is_builtin
     ? BUILTIN_OPTION_ROOT
-    : this.option_root;
+    : this.options.option_root;
 
   var type = is_builtin 
     ? 'builtin'
@@ -340,6 +340,7 @@ Comfort.prototype._get_command = function(command, root, callback) {
 };
 
 
+// Run from argv
 Comfort.prototype.run = function(argv, callback) {
   var self = this;
   this.parse(argv, function (err, result) {
@@ -353,13 +354,19 @@ Comfort.prototype.run = function(argv, callback) {
       return self.plugin(command, result.argv.slice(3), callback);
     }
 
-    self.commander(result.command, function (err, commander) {
-      if (err) {
-        return callback(err);
-      }
+    self.command(command, result.options, callback);
+  });
+};
 
-      commander.run(result.options, callback);
-    });
+
+// Run a command with specified options
+Comfort.prototype.command = function(command, options, callback) {
+  this.commander(command, function (err, commander) {
+    if (err) {
+      return callback(err);
+    }
+
+    commander.run(options, callback);
   });
 };
 
