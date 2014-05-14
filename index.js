@@ -94,10 +94,7 @@ Comfort.prototype._parse = function(argv, callback, strict) {
   var command = argv[2];
   var is_entry = !command;
 
-  var is_command =
-    command
-    && command.indexOf('-') !== 0;
-
+  var is_command = this._is_command(command);
   var is_normal = is_command && this._is_normal(command);
   var is_builtin = is_command && this._is_builtin(command);
 
@@ -143,7 +140,12 @@ Comfort.prototype._parse = function(argv, callback, strict) {
   // Help -h, --help
   ////////////////////////////////////////////////////////////////////////////////////
   var index_h = argv.indexOf('-h');
-  var index_help = argv.indexOf('--help');  
+  var index_help = argv.indexOf('--help');
+
+  var help_extra_options = {
+    commands: this.commands,
+    builtins: BUILTIN_COMMANDS
+  };
 
   // 'help' command need special treatment
   if (
@@ -160,7 +162,17 @@ Comfort.prototype._parse = function(argv, callback, strict) {
     // cortex install -h
     // cortex install --help 
     // -> cortex help
-    var command_for_help = index_h !== 2 && index_help !== 2 && argv[2];
+    var command_for_help = 
+      index_h !== 2 && 
+      index_help !== 2 && 
+      argv[2];
+
+    // Wrong usage
+    // cortex --abc -h
+    if (!this._is_command(command_for_help)) {
+      command_for_help = null;
+    }
+
     command = 'help';
 
     if (is_entry) {
@@ -173,18 +185,32 @@ Comfort.prototype._parse = function(argv, callback, strict) {
       type: this._is_builtin(command)
         ? 'builtin'
         : 'normal',
-      options: {
+      options: mix({
         command: command_for_help,
-
         // if there's only root command, an `entrance` option will be added
         entry: is_entry
-      }
+      }, help_extra_options)
     });
   }
 
   // Normal & Builtin
   ////////////////////////////////////////////////////////////////////////////////////
-  this._parse_argv(command, argv, callback);
+  this._parse_argv(command, argv, function (err, result) {
+    if (err) {
+      return callback(err);
+    }
+
+    if (command === 'help') {
+      mix(result.options, help_extra_options);
+    }
+
+    callback(null, result);
+  });
+};
+
+
+Comfort.prototype._is_command = function(command) {
+  return command && command.indexOf('-') !== 0;
 };
 
 
@@ -223,6 +249,7 @@ Comfort.prototype._parse_argv = function(command, argv, callback) {
     ? 'builtin'
     : 'normal';
 
+  var self = this;
   this._get_option_rule(command, option_root, function (err, rule) {
     if (err) {
       return callback(err);
@@ -241,8 +268,8 @@ Comfort.prototype._parse_argv = function(command, argv, callback) {
     clean({
       schema: rule.options,
       shorthands: rule.shorthands,
-      offset: this.options.offset,
-      context: this.context
+      offset: self.options.offset,
+      context: self.context
 
     }).parseArgv(argv, function(err, results, details) {
       callback(err, {
