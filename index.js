@@ -20,7 +20,7 @@ var util = require('util');
 var spawn = require('child_process').spawn;
 var fs = require('fs');
 var expand = require('fs-expand');
-
+var async = require('async');
 var clean = require('clean');
 
 var BUILTIN_COMMAND_ROOT = node_path.join(__dirname, 'lib', 'built-in', 'command');
@@ -143,8 +143,11 @@ Comfort.prototype._parse = function(argv, callback, strict) {
   var index_help = argv.indexOf('--help');
 
   var help_extra_options = {
-    commands: this.commands,
-    builtins: BUILTIN_COMMANDS
+    commands    : this.commands,
+    builtins    : BUILTIN_COMMANDS,
+    name        : this.options.name,
+    command_root: this.options.command_root,
+    option_root : this.options.option_root
   };
 
   // 'help' command need special treatment
