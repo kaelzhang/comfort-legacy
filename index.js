@@ -108,15 +108,7 @@ Comfort.prototype._parse = function(argv, callback, strict) {
   // Plugin command needs special treatment.
   if (is_command && !is_normal && !is_builtin) {
     if (strict) {
-      var name = this.options.name;
-      return callback({
-        code: 'COMMAND_NOT_FOUND',
-        message: name + ': "' + command + '" is not a "' + name + '" command. See "' + name + ' --help".',
-        data: {
-          name: name,
-          command: command
-        }
-      });
+      return this._command_not_found(command, callback);
     }
 
     return callback(null, {
@@ -197,16 +189,30 @@ Comfort.prototype._is_normal = function(command) {
 };
 
 
+Comfort.prototype._command_not_found = function(command, callback) {
+  var name = this.options.name;
+  callback({
+    code: 'COMMAND_NOT_FOUND',
+    message: name + ': "' + command + '" is not a "' + name + '" command. See "' + name + ' --help".',
+    data: {
+      name: name,
+      command: command
+    }
+  });
+};
+
+
 // Parse the argv of a normal or builtin command
 Comfort.prototype._parse_argv = function(command, argv, callback) {
-  var is_normal = this._is_normal(command);
-  var option_root = is_normal
-    ? this.option_root
-    : BUILTIN_OPTION_ROOT;
+  // builtin command is less
+  var is_builtin = this._is_builtin(command);
+  var option_root = is_builtin
+    ? BUILTIN_OPTION_ROOT
+    : this.option_root;
 
-  var type = is_normal 
-    ? 'normal' 
-    : 'builtin';
+  var type = is_builtin 
+    ? 'builtin'
+    : 'normal';
 
   this._get_option_rule(command, option_root, function (err, rule) {
     if (err) {
@@ -268,13 +274,152 @@ Comfort.prototype._get_option_rule = function(command, root, callback) {
 };
 
 
+Comfort.prototype._get_command = function(command, root, callback) {
+  var file = node_path.join(root, command + '.js');
+  fs.exists(file, function (exists) {
+    if (!exists) {
+      return this._command_not_found(command, callback);
+    }
+
+    var proto;
+    try {
+      proto = require(file);
+    } catch(e) {
+      return callback({
+        code: 'FAIL_READ_COMMAND',
+        message: 'Fails to read command file "' + file + '": ' + e.stack,
+        data: {
+          command: command,
+          file: file,
+          error: e
+        }
+      });
+    }
+
+    callback(null, proto);
+  });
+};
+
+
 Comfort.prototype.run = function(argv, callback) {
-  this.parse(argv, function (err) {
+  var self = this;
+  this.parse(argv, function (err, result) {
     if (err) {
       return callback(err);
     }
 
+    var command = result.command;
 
+    if (result.type === 'plugin') {
+      return self.plugin(command, result.argv.slice(3), callback);
+    }
+
+    self.commander(result.command, function (err, commander) {
+      if (err) {
+        return callback(err);
+      }
+
+      commander.run(result.options, callback);
+    });
+  });
+};
+
+
+// Try to run the given command from the `PATH`
+Comfort.prototype.plugin = function(command, args, callback) {
+  this.emit('plugin', {
+    name: name,
+    command: command,
+    args: args
+  });
+
+  var name = this.options.name;
+  var bin = name + '-' + command;
+  var paths = process.env.PATH.split(':').map(function (path) {
+    return node_path.resolve(path, bin);
+  });
+
+  this._try_files(paths, function (found) {
+    if (!found) {
+      return this._command_not_found(command, callback);
+    }
+
+    var plugin = spawn(found, args, {
+      stdio: 'inherit',
+      // `options.customFds` is now DEPRECATED.
+      // just for backward compatibility.
+      customFds: [0, 1, 2]
+    });
+
+    // for node <= 0.6, 'close' event often could not be triggered
+    plugin.on('exit', function(code) {
+      callback(code);
+    });
+  });
+};
+
+
+Comfort.prototype._try_files = function(files, callback) {
+  async.eachSeries(files, function (file, done) {
+    fs.exists(file, function (exists) {
+      if (!exists) {
+        return done(null);
+      }
+
+      fs.stat(file, function (err, stat) {
+        if (!err && stat.isFile()) {
+          return done(file);
+        }
+
+        done(null);
+      });
+    });
+  }, callback);
+};
+
+
+function mix (receiver, supplier, override){
+  var key;
+
+  if(arguments.length === 2){
+    override = true;
+  }
+
+  for(key in supplier){
+    if(override || !(key in receiver)){
+        receiver[key] = supplier[key]
+    }
+  }
+
+  return receiver;
+}
+
+
+// @returns {Object|false}
+Comfort.prototype.commander = function(command, callback) {
+  // cache commander to improve performance
+  var commander = this.__commander[command];
+  if (commander) {
+    return callback(null, commander);
+  }
+
+  var is_builtin = this._is_builtin(command);
+  var command_root = is_builtin
+    ? BUILTIN_COMMAND_ROOT
+    : this.options.command_root;
+
+  var self = this;
+  this._get_command(command, root, function (err, proto) {
+    if (err) {
+      return callback(err);
+    }
+
+    // There might be more than one comfort instances,
+    // so `Object.create` a new commander object to prevent reference pollution.
+    var commander = this.__commander[command] = Object.create(commander_proto);
+    mix(commander, self.context);
+
+    callback(null, commander);
   });
 };
 
@@ -320,212 +465,11 @@ Comfort.prototype.cli = function(argv) {
 
   argv = argv || process.argv;
 
-  this.parse(argv, function(err, result, details) {
-    var command = result.command;
-    var opt = result.opt;
-
+  this.run(argv, function (err) {
     if (err) {
-      return self._emit_complete(command, [err]);
+      self.emit('error', err);
     }
-
-    self.run(command, opt, function(err) {
-      if (err && err.code === 'E_COMMAND_NOT_FOUND') {
-        return self._run_plugin(command, argv.slice(self.options.offset), function() {
-          self._emit_complete(command, arguments)
-        });
-      }
-
-      self._emit_complete(command, arguments);
-    });
+    
+    self.emit('finish');
   });
 };
-
-
-Comfort.prototype._emit_complete = function(command, args) {
-  args = Array.prototype.slice.call(args);
-  var error = args.shift();
-
-  this._emit('complete', {
-    name: this.options.name,
-    command: command,
-    error: error,
-    data: args
-  });
-};
-
-
-// Try to run the given command from the `PATH`
-Comfort.prototype._run_plugin = function(command, args, callback) {
-  var name = this.options.name;
-  var bin = name + '-' + command;
-  var paths = process.env.PATH.split(':');
-  var found;
-
-  paths.some(function(path) {
-    var bin_path = node_path.resolve(path, bin);
-
-    if (exists(bin_path) && isFile(bin_path)) {
-      found = bin_path;
-      return true;
-    }
-  });
-
-  if (!found) {
-    return this._command_not_found(command, callback);
-  }
-
-  this._emit('plugin', {
-    name: name,
-    command: command,
-    args: args
-  });
-
-  var plugin = spawn(found, args, {
-    stdio: 'inherit',
-    // `options.customFds` is now DEPRECATED.
-    // just for backward compatibility.
-    customFds: [0, 1, 2]
-  });
-
-  // for node <= 0.6, 'close' event often could not be triggered
-  plugin.on('exit', function(code) {
-    callback(code);
-  });
-};
-
-
-Comfort.prototype._command_not_found = function(command, callback) {
-  var name = this.options.name;
-  callback({
-    code: 'E_COMMAND_NOT_FOUND',
-    message: name + ': "' + command + '" is not a "' + name + '" command. See "' + name + ' --help".',
-    data: {
-      name: name,
-      command: command
-    }
-  });
-};
-
-
-// ＠public
-// Run a command with callbacks.
-// This method might be called manually.
-Comfort.prototype.run = function(command, options, callback) {
-  var commander = this.get_commander(command);
-  var name = this.options.name;
-
-  // explode `comfort` options to sub commands
-  if (command === 'help') {
-    options.options = this.options;
-  }
-
-  if (!commander) {
-    this._command_not_found(command, callback);
-
-  } else {
-    this._run_commander(commander, options, callback);
-  }
-};
-
-
-// Run a given commander
-Comfort.prototype._run_commander = function(commander, options, callback) {
-  commander.run(options, callback);
-};
-
-
-
-
-
-// check if a sub commander 
-Comfort.prototype.command_exists = function(command) {
-  return !!this._get_commander_file(command);
-};
-
-
-// @returns {Object|false}
-Comfort.prototype.get_commander = function(command) {
-  // cache commander to improve performance
-  var commander = this.__commander[command];
-
-  if (!commander) {
-    var commander_file = this._get_commander_file(command);
-
-    if (!commander_file) {
-      return false;
-    }
-
-    var commander_proto = require(commander_file);
-
-    if (this.options.prevent_extensions) {
-      Object.preventExtensions(commander_proto);
-    }
-
-    // There might be more than one comfort instances,
-    // so `Object.create` a new commander object to prevent reference pollution.
-    commander = this.__commander[command] = Object.create(commander_proto);
-
-    commander.context = this.context;
-    commander.logger = this.logger;
-  }
-
-  return commander;
-};
-
-
-// ._emit('COMMAND_NOT_FOUND', command)
-Comfort.prototype._emit = function(type, data) {
-  if (!type) {
-    return;
-  }
-
-  // if there is no custom event listeners
-  if (this.listeners(type).length === 0) {
-    DEFAULT_EVENTS[type].apply(this, Array.prototype.slice.call(arguments, 1));
-  } else {
-    // this.emit('commandNotFound', command)
-    this.emit.apply(this, arguments);
-  }
-};
-
-
-// @param {string} command name of the command
-// @returns
-//      {false} if commander not found
-//      {path} path of the commander file
-Comfort.prototype._get_commander_file = function(command) {
-  return !!command && (
-    this._get_file(this.options.command_root, command) ||
-    this._get_file(builtin_command_root, command)
-  );
-};
-
-
-Comfort.prototype._get_file = function(root, name) {
-  var file = node_path.join(root, name + '.js');
-
-  return exists(file) && file;
-};
-
-// var DEFAULT_EVENTS = {
-//   complete: function(e) {
-//     var err = e.error;
-
-//     if (err) {
-//       if (err instanceof Error) {
-//         // loggie will deal with `Error` instances
-//         this.logger.error(err);
-
-//         // error code
-//       } else if (typeof err === 'number') {
-//         this.logger.error('Not ok, exit code: ' + err);
-
-//       } else {
-//         this.logger.error(err.message || err);
-//       }
-
-//     } else if (e.command !== 'help') {
-//       this.logger.info('{{green OK!}}');
-//     }
-//   }
-// };
