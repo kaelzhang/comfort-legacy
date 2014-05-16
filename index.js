@@ -516,7 +516,7 @@ Comfort.prototype.cli = function(argv) {
   var self = this;
   this.run(argv, function (err) {
     if (err) {
-      self.emit('error', err);
+      return self.emit('error', err);
     }
     
     self.emit('finish');
