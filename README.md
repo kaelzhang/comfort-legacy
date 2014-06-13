@@ -6,6 +6,8 @@ If you have sub commands, such as `<my-module> <command>`, comfort will be extre
  
 Comfort is designed to **make your code better organized and of scalability**, unlike [commander.js](https://github.com/visionmedia/commander.js).
 
+If you want to create a complicated command tool with heavy arguments overloading, `comfort` will be your very choice.
+
 ## Features
 
 #### Plugin support
