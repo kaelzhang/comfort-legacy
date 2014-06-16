@@ -27,11 +27,11 @@
     "url": "https://github.com/kaelzhang/node-comfort/issues"
   },
   "dependencies": {
-    "async": "^0.8.0",
-    "clean": "~2.1.1",
+    "clean": "^2.1.1",
     "fs-expand": "^0.1.2",
-    "fs-extra": "^0.8.1",
-    "package-version": "^0.1.1"
+    "package-version": "^0.1.1",
+    "async": "^0.9.0",
+    "fs-extra": "~0.9.1"
   },
   "devDependencies": {
     "mocha": "~1.13.0",
