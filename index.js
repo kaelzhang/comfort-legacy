@@ -274,7 +274,7 @@ Comfort.prototype._parse_argv = function(command, argv, callback) {
       offset: self.options.offset,
       context: self.context
 
-    }).parseArgv(argv, function(err, results, details) {
+    }).parse(argv, function(err, results, details) {
       callback(err, {
         command: command,
         options: results,
