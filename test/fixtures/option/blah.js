@@ -24,10 +24,7 @@ exports.options = {
 };
 
 exports.shorthands = {
-    f: 'force',
-    nw: {
-        watch: false
-    }
+    f: 'force'
 };
 
 exports.info = 'Initialize a repo';
