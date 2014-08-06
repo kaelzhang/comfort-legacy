@@ -15,7 +15,7 @@
     "cli"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/.bin/mocha --reporter spec ./test/comfort.js"
   },
   "repository": {
     "type": "git",
