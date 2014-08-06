@@ -31,7 +31,8 @@
     "clean": "^3.0.0",
     "fs-expand": "^0.1.2",
     "fs-extra": "^0.10.0",
-    "package-version": "^0.1.1"
+    "package-version": "^0.1.1",
+    "spawns": "^0.3.0"
   },
   "devDependencies": {
     "mocha": "~1.13.0",

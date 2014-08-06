@@ -17,7 +17,7 @@ function comfort(options) {
 var node_path = require('path');
 var EE = require('events').EventEmitter;
 var util = require('util');
-var spawn = require('child_process').spawn;
+var spawn = require('spawns');
 var fs = require('fs');
 var expand = require('fs-expand');
 var async = require('async');
