@@ -32,11 +32,29 @@ function Comfort(options) {
   this.context = options.context || {};
   this.commands = options.commands;
   options.offset = 'offset' in options ? options.offset : 3;
-
   this.__commander = {};
 }
 
 util.inherits(Comfort, EE);
+
+
+Comfort.prototype.setup = function(setup) {
+  if (this.pending) {
+    return this;
+  }
+
+  if (typeof setup === 'function') {
+    this.pending = true;
+    var done = function () {
+      this.pending = false;
+      this.emit('setup');
+    }.bind(this);
+
+    setup.call(this, done);
+  }
+
+  return this;
+};
 
 
 // 'abc.js' -> 'abc'
@@ -510,7 +528,7 @@ Comfort.prototype.commander = function(command, callback) {
 // }
 
 // run cli
-Comfort.prototype.cli = function(argv) {
+Comfort.prototype._cli = function(argv) {
   argv = argv || process.argv;
 
   var self = this;
@@ -521,4 +539,15 @@ Comfort.prototype.cli = function(argv) {
     
     self.emit('finish');
   });
+};
+
+
+Comfort.prototype.cli = function(argv) {
+  if (this.pending) {
+    this.on('setup', function () {
+      this._cli(argv);
+    }.bind(this));
+  } else {
+    this._cli(argv);
+  }
 };
