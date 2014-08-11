@@ -101,3 +101,24 @@ describe("legacy node 0.6 & 0.8", function() {
     done();
   });
 });
+
+
+describe("with setup", function(){
+  it("should delay running", function(done){
+    var flag = false;
+    function setup (done) {
+      setTimeout(function () {
+        flag = true;
+        done();
+      }, 50);
+    }
+
+    var one = create().on('finish', function(e) {
+      expect(flag).to.equal(true);
+      done();
+    });
+
+    one.setup(setup).cli('node xxx polute -f --nw --retry 12'.split(' '));
+    expect(flag).to.equal(false);
+  });
+});
