@@ -97,8 +97,10 @@ describe("prevent pollution for a certain command", function() {
 
 describe("legacy node 0.6 & 0.8", function() {
   it("no error", function(done) {
-    cli('node xxx blah -f --nw --retry 12');
-    done();
+    cli('node xxx blah -f --nw --retry 12').on('error', function (err) {
+      expect(err).not.to.equal(null);
+      done();
+    });
   });
 });
 
