@@ -22,6 +22,7 @@ var fs = require('fs');
 var expand = require('fs-expand');
 var async = require('async');
 var clean = require('clean');
+var mix = require('mix2');
 
 var BUILTIN_COMMAND_ROOT = node_path.join(__dirname, 'lib', 'built-in', 'command');
 var BUILTIN_OPTION_ROOT = node_path.join(__dirname, 'lib', 'built-in', 'option');
@@ -29,13 +30,21 @@ var BUILTIN_OPTION_ROOT = node_path.join(__dirname, 'lib', 'built-in', 'option')
 
 function Comfort(options) {
   this.options = options;
-  this.context = options.context || {};
+
   this.commands = options.commands;
   options.offset = 'offset' in options ? options.offset : 3;
-  this.__commander = {};
+
+  this._context = {};
+  this._commander = {};
 }
 
 util.inherits(Comfort, EE);
+
+
+Comfort.prototype.context = function (context) {
+  mix(this._context, context);
+  return this;
+};
 
 
 Comfort.prototype.setup = function(setup) {
@@ -442,27 +451,10 @@ Comfort.prototype._try_files = function(files, callback) {
 };
 
 
-function mix (receiver, supplier, override){
-  var key;
-
-  if(arguments.length === 2){
-    override = true;
-  }
-
-  for(key in supplier){
-    if(override || !(key in receiver)){
-        receiver[key] = supplier[key]
-    }
-  }
-
-  return receiver;
-}
-
-
 // @returns {Object|false}
 Comfort.prototype.commander = function(command, callback) {
   // cache commander to improve performance
-  var commander = this.__commander[command];
+  var commander = this._commander[command];
   if (commander) {
     return callback(null, commander);
   }
@@ -481,10 +473,10 @@ Comfort.prototype.commander = function(command, callback) {
     // There might be more than one comfort instances,
     // so `Object.create` a new commander object to prevent reference pollution.
     // Equivalent to prototype inheritance
-    var commander = self.__commander[command] = Object.create(proto);
+    var commander = self._commander[command] = Object.create(proto);
 
     // Equivalent to `constructor.call(this)`
-    mix(commander, self.context);
+    mix(commander, self._context);
 
     callback(null, commander);
   });
