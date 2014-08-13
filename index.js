@@ -289,8 +289,7 @@ Comfort.prototype._parse_argv = function(command, argv, callback) {
     clean({
       schema: rule.options,
       shorthands: rule.shorthands,
-      offset: self.options.offset,
-      context: self.context
+      offset: self.options.offset
 
     }).parse(argv, function(err, results, details) {
       callback(err, {
