@@ -1,6 +1,6 @@
 {
   "name": "comfort",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "Comfort is a much better node.js commander solution for sub commands.",
   "main": "index.js",
   "keywords": [
@@ -27,10 +27,10 @@
     "url": "https://github.com/kaelzhang/node-comfort/issues"
   },
   "dependencies": {
-    "async": "^0.9.0",
+    "async": "^1.4.0",
     "clean": "^4.0.0",
     "fs-expand": "^0.1.2",
-    "fs-extra": "^0.11.0",
+    "fs-extra": "^0.22.0",
     "mix2": "^1.0.1",
     "package-version": "^0.1.1",
     "spawns": "^0.3.0"
