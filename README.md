@@ -47,12 +47,12 @@ npm install comfort --save
 For most situations, you could use `init` command of comfort, and skip all my verbose explanations:
 
 ```bash
-npm install comfort -g # install comfort cli
+npm i -g comfort-cli # install comfort cli
 cd path/to/your/repo
-npm init # run `npm init` first
+npm init # we should run npm init first
 comfort init
 npm link # maybe you should use "sudo"
-# Done! and you could see your command immediatly
+# Done! and you could see your command immediately
 <your-bin>
 ```
 
@@ -64,7 +64,7 @@ You could run
 <your-bin> sample # to see the result
 <your-bin> help sample # to the help info for `sample`
 ```
-	
+
 **All things would be done after a few questions were asked~~**.
 
 ****
