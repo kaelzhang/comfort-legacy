@@ -7,6 +7,7 @@
 //      name: 'cortex'
 //  }).cli();
 module.exports = comfort;
+comfort.errorHandler = require('./lib/error-handler');
 
 function comfort(options) {
   options || (options = {});
