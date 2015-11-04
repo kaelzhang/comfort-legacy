@@ -35,7 +35,9 @@ function Comfort(options) {
   this.commands = options.commands;
   options.offset = 'offset' in options ? options.offset : 3;
 
-  this._context = {};
+  this._context = {
+    commander: this
+  };
   this._commander = {};
 }
 
