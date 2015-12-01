@@ -344,9 +344,10 @@ Comfort.prototype._get_option_rule = function(command, root, callback) {
 
 Comfort.prototype._get_command = function(command, root, callback) {
   var file = node_path.join(root, command + '.js');
+  var self = this;
   fs.exists(file, function (exists) {
     if (!exists) {
-      return this._command_not_found(command, callback);
+      return self._command_not_found(command, callback);
     }
 
     var proto;
@@ -473,10 +474,13 @@ Comfort.prototype.commander = function(command, callback) {
       return callback(err);
     }
 
+    proto.__proto__ = EE.prototype;
+
     // There might be more than one comfort instances,
     // so `Object.create` a new commander object to prevent reference pollution.
     // Equivalent to prototype inheritance
-    var commander = self._commander[command] = Object.create(proto);
+    var commander = self._commander[command] = {};
+    commander.__proto__ = proto;
 
     // Equivalent to `constructor.call(this)`
     mix(commander, self._context);

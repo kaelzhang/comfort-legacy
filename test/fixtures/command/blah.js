@@ -3,5 +3,8 @@
 var command = module.exports = {};
 
 command.run = function (options, callback) {
-    callback(null, options);
+  options.blah = true;
+
+  this.emit('event', options);
+  callback(null, options);
 };

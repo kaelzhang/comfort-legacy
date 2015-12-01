@@ -124,3 +124,30 @@ describe("with setup", function(){
     expect(flag).to.equal(false);
   });
 });
+
+
+describe(".commander()", function(){
+  it("run command", function(done){
+    var c = create();
+    c.commander('blah', function (err, commander) {
+      expect(err).to.equal(null);
+      commander.run({}, function(err, options){
+        expect(err).to.equal(null);
+        expect(options.blah).to.equal(true);
+        done();
+      });
+    });
+  });
+
+  it("command event", function(done){
+    var c = create();
+    c.commander('blah', function (err, commander) {
+      expect(err).to.equal(null);
+      commander.on('event', function (options) {
+        expect(options.blah).to.equal(true);
+        done();
+      });
+      commander.run({}, function(){});
+    });
+  });
+});
