@@ -38,7 +38,7 @@ function Comfort(options) {
   this._context = {
     commander: this
   }
-  this._commander = {}
+  this._commander_proto = {}
 }
 
 util.inherits(Comfort, EE)
@@ -50,6 +50,7 @@ Comfort.prototype.context = function (context) {
 }
 
 
+// comfort().setup(async_setup_method).cli()
 Comfort.prototype.setup = function(setup) {
   if (this.pending) {
     return this
@@ -342,7 +343,7 @@ Comfort.prototype._get_option_rule = function(command, root, callback) {
 }
 
 
-Comfort.prototype._get_command = function(command, root, callback) {
+Comfort.prototype._get_command_proto = function(command, root, callback) {
   var file = node_path.join(root, command + '.js')
   var self = this
   fs.exists(file, function (exists) {
@@ -381,28 +382,22 @@ Comfort.prototype.run = function(argv, callback) {
     var command = result.command
 
     if (result.type === 'plugin') {
-      return self.plugin(command, result.argv.slice(3), callback)
+      return self._plugin(command, result.argv.slice(3), callback)
     }
 
-    self.command(command, result.options, callback)
-  })
-}
+    self.commander(command, function (err, commander) {
+      if (err) {
+        return callback(err)
+      }
 
-
-// Run a command with specified options
-Comfort.prototype.command = function(command, options, callback) {
-  this.commander(command, function (err, commander) {
-    if (err) {
-      return callback(err)
-    }
-
-    commander.run(options, callback)
+      commander.run(result.options, callback)
+    })
   })
 }
 
 
 // Try to run the given command from the `PATH`
-Comfort.prototype.plugin = function(command, args, callback) {
+Comfort.prototype._plugin = function(command, args, callback) {
   this.emit('plugin', {
     name: name,
     command: command,
@@ -457,10 +452,27 @@ Comfort.prototype._try_files = function(files, callback) {
 
 // @returns {Object|false}
 Comfort.prototype.commander = function(command, callback) {
+  function create_commander(_proto) {
+    var proto = {}
+    mix(proto, EE.prototype)
+    mix(proto, _proto)
+
+    var commander = {}
+    commander.__proto__ = proto
+
+    // Equivalent to `constructor.call(this)`
+    mix(commander, self._context)
+
+    // There might be more than one comfort instances,
+    // so `Object.create` a new commander object to prevent reference pollution.
+    // Equivalent to prototype inheritance
+    callback(null, commander)
+  }
+
   // cache commander to improve performance
-  var commander = this._commander[command]
-  if (commander) {
-    return callback(null, commander)
+  var proto = this._commander_proto[command]
+  if (proto) {
+    return create_commander(proto)
   }
 
   var is_builtin = this._is_builtin(command)
@@ -469,23 +481,13 @@ Comfort.prototype.commander = function(command, callback) {
     : this.options.command_root
 
   var self = this
-  this._get_command(command, command_root, function (err, proto) {
+  this._get_command_proto(command, command_root, function (err, proto) {
     if (err) {
       return callback(err)
     }
 
-    proto.__proto__ = EE.prototype
-
-    // There might be more than one comfort instances,
-    // so `Object.create` a new commander object to prevent reference pollution.
-    // Equivalent to prototype inheritance
-    var commander = self._commander[command] = {}
-    commander.__proto__ = proto
-
-    // Equivalent to `constructor.call(this)`
-    mix(commander, self._context)
-
-    callback(null, commander)
+    self._commander_proto[command] = proto
+    create_commander(proto)
   })
 }
 
