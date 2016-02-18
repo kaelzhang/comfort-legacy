@@ -39,6 +39,7 @@ function Comfort(options) {
     commander: this
   }
   this._commander_proto = {}
+  this._commander = {}
 }
 
 util.inherits(Comfort, EE)
@@ -451,7 +452,14 @@ Comfort.prototype._try_files = function(files, callback) {
 
 
 // @returns {Object|false}
-Comfort.prototype.commander = function(command, callback) {
+Comfort.prototype.commander = function(command, callback, create_new) {
+  if (!create_new) {
+    var commander = this._commander[command]
+    if (commander) {
+      return callback(null, commander)
+    }
+  }
+
   function create_commander(_proto) {
     var proto = {}
     mix(proto, EE.prototype)
@@ -463,10 +471,14 @@ Comfort.prototype.commander = function(command, callback) {
     // Equivalent to `constructor.call(this)`
     mix(commander, self._context)
 
-    // There might be more than one comfort instances,
-    // so `Object.create` a new commander object to prevent reference pollution.
-    // Equivalent to prototype inheritance
-    callback(null, commander)
+    setImmediate(function () {
+      // There might be more than one comfort instances,
+      // so `Object.create` a new commander object to prevent reference pollution.
+      // Equivalent to prototype inheritance
+      callback(null, commander)
+    })
+
+    return commander
   }
 
   // cache commander to improve performance
@@ -486,8 +498,9 @@ Comfort.prototype.commander = function(command, callback) {
       return callback(err)
     }
 
+    var commander = create_commander(proto)
     self._commander_proto[command] = proto
-    create_commander(proto)
+    self._commander[command] = commander
   })
 }
 
