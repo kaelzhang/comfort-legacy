@@ -7,7 +7,7 @@
 Comfort is a much better node.js commander solution for sub commands.
 
 If you have sub commands, such as `<my-module> <command>`, comfort will be extremely helpful.
- 
+
 Comfort is designed to **make your code better organized and of scalability**, unlike [commander.js](https://github.com/visionmedia/commander.js).
 
 If you want to create a complicated command tool with heavy arguments overloading, `comfort` will be your very choice.
@@ -44,7 +44,7 @@ npm install comfort --save
 
 # Getting Started
 
-For most situations, you could use `init` command of comfort, and skip all my verbose explanations:
+<!-- For most situations, you could use `init` command of comfort, and skip all my verbose explanations:
 
 ```bash
 npm i -g comfort-cli # install comfort cli
@@ -56,7 +56,7 @@ npm link # maybe you should use "sudo"
 <your-bin>
 ```
 
-By default, there will be a built-in `'help'` command to display help informations and a `'sample'` command for instance. 
+By default, there will be a built-in `'help'` command to display help informations and a `'sample'` command for instance.
 
 You could run
 
@@ -67,10 +67,10 @@ You could run
 
 **All things would be done after a few questions were asked~~**.
 
-****
-	
-If you want to figure out how comfort works, well, 
-	
+**** -->
+
+If you want to figure out how comfort works, well,
+
 > Shut up, just show me the code!
 
 and just see the annotations in the files under `root` directory.
